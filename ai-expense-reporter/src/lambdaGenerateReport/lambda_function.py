@@ -26,10 +26,12 @@ def lambda_handler(event, context):
     :return: JSON response containing the expense reports or an error message.
     """
     try:
-        # Extract and validate input parameters
-        user_id = event.get("user_id")
-        start_date_str = event.get("start_date")
-        end_date_str = event.get("end_date")
+        # Extract and validate input parameters from the query string
+
+        query_params = event.get("queryStringParameters", {})
+        user_id = query_params.get("user_id")
+        start_date_str = query_params.get("start_date")
+        end_date_str = query_params.get("end_date")
 
         if not user_id or not start_date_str or not end_date_str:
             raise ValueError(
@@ -48,9 +50,6 @@ def lambda_handler(event, context):
             KeyConditionExpression=Key("user_id").eq(user_id)
             & Key("date").between(start_date_str, end_date_str)
         )
-
-        print("The response is:")
-        print(f"{response}")
 
         items = response.get("Items", [])
 
