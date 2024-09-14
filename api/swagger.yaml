@@ -1,0 +1,118 @@
+openapi: 3.0.1
+info:
+  description: "AWS API Gateway for AI-powered app features."
+  version: '1'
+  title: "Chequebase AI Endpoint Documentation"
+servers:
+  - url: "https://84vtt8xp3f.execute-api.eu-central-1.amazonaws.com/development"
+tags:
+  - name: "expense reporting"
+    description: "APIs related to expense report management."
+
+paths:
+  /chequebase-ai-getExpenseReport:
+    put:
+      tags:
+        - "expense reporting"
+      summary: "Get expense report"
+      description: "Retrieve expense reports for a specific company within a specified date range. This operation requires AWS IAM authentication and Signature v4."
+      operationId: "getExpenseReport"
+      parameters:
+        - name: "company_id"
+          in: query
+          required: true
+          description: "The ID of the company for which the expense report is requested."
+          schema:
+            type: string
+        - name: "start_date"
+          in: query
+          required: true
+          description: "The start date for filtering the expense report."
+          schema:
+            type: string
+        - name: "end_date"
+          in: query
+          required: true
+          description: "The end date for filtering the expense report."
+          schema:
+            type: string
+        - name: "Authorization"
+          in: header
+          required: true
+          description: "Bearer token for IAM authentication, passed using Signature v4."
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Successfully retrieved expense report."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        credentials: "arn:aws:iam::381491983037:role/service-role/fetchExpenseReport-role-lod7mzer"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:381491983037:function:chequebase-ai-get-expense-report/invocations"
+        passthroughBehavior: "when_no_templates"
+        timeoutInMillis: 29000
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      security:
+        - IAMAuth: []
+
+  /chequebase-ai-uploadToS3:
+    post:
+      tags:
+        - "expense reporting"
+      summary: "Upload files to S3"
+      description: "Get pre-signed URLs for uploading files to S3. This operation requires AWS IAM authentication and Signature v4."
+      operationId: "uploadToS3"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                company_id:
+                  type: string
+                  description: "The ID of the company under which the files are being uploaded."
+                filenames:
+                  type: string
+                  description: "A comma-separated string of file names to upload."
+      responses:
+        '200':
+          description: "Successfully retrieved pre-signed URLs for file upload."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        credentials: "arn:aws:iam::381491983037:role/service-role/fetchExpenseReport-role-lod7mzer"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:381491983037:function:chequebase-ai-get-presigned-url/invocations"
+        requestTemplates:
+          application/json: |
+            {
+              "company_id": "$input.path('$.company_id')",
+              "filenames": "$input.path('$.filenames')"
+            }
+        passthroughBehavior: "when_no_templates"
+        timeoutInMillis: 29000
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      security:
+        - IAMAuth: []
+
+components:
+  securitySchemes:
+    IAMAuth:
+      type: apiKey
+      name: Authorization
+      in: header
+      description: "Use AWS Signature v4 with IAM credentials for authentication. You can generate the signature using AWS SDK or AWS CLI."
+
+  schemas:
+    Empty:
+      type: object
+      title: "Empty Schema"
