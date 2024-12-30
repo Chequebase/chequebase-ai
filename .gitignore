@@ -83,4 +83,13 @@ coverage.xml
 nosetests.xml
 coverage.xml
 
+
+# Virtual environments
+.env
+.envrc
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 ​⬤
