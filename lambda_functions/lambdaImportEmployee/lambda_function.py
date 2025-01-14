@@ -23,10 +23,12 @@ s3_client = boto3.client("s3")
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(TABLE_NAME)
 
-# OpenAI Client (api_key from Secrets Manager)
-
 
 def get_secret():
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if api_key:
+        return {"openai": api_key}
     secret_name = "openai"
     region_name = "eu-central-1"
     session = boto3.session.Session()
@@ -38,6 +40,7 @@ def get_secret():
     return json.loads(get_secret_value_response["SecretString"])
 
 
+# OpenAI Client (api_key from Secrets Manager)
 secret = get_secret()
 openai_client = OpenAI(api_key=secret["openai"])
 
