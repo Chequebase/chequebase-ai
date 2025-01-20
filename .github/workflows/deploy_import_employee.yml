@@ -1,0 +1,52 @@
+name: Deploy ImportEmployee Lambda
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1) Check out the code
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      # 2) Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      # 3) Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 4) Run tests (pytest)
+      - name: Run tests
+        run: |
+          pytest --maxfail=1 --disable-warnings -q
+
+      # 5) Package Lambda code
+      #    We'll zip only the lambdaImportEmployee folder (adjust paths if you need layers, etc.)
+      - name: Create deployment package
+        run: |
+          mkdir -p build
+          cd lambda_functions
+          zip -r ../build/lambdaImportEmployee.zip lambda_functions/lambdaImportEmployee
+          cd ..
+
+      # 6) Deploy to AWS Lambda
+      - name: Deploy Lambda
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION || 'eu-central-1' }}
+        run: |
+          # Update your function name here:
+          aws lambda update-function-code \
+            --function-name myImportEmployeeLambda \
+            --zip-file fileb://build/lambdaImportEmployee.zip
