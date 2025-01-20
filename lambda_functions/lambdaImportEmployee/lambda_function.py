@@ -9,6 +9,7 @@ import boto3
 from botocore.exceptions import ClientError
 from openai import OpenAI
 
+# Setup logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
