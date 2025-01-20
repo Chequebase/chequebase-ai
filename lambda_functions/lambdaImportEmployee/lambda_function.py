@@ -19,8 +19,8 @@ DEFAULT_ROLE = "employee"
 EMAIL_REGEX = r"^[\w\.-]+@[\w\.-]+\.\w+$"
 
 # AWS clients
-s3_client = boto3.client("s3")
-dynamodb = boto3.resource("dynamodb")
+s3_client = boto3.client("s3", region_name="eu-central-1")
+dynamodb = boto3.resource("dynamodb", region_name="eu-central-1")
 table = dynamodb.Table(TABLE_NAME)
 
 
