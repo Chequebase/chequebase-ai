@@ -305,7 +305,7 @@ def send_data_to_websocket(connection_id, data_models):
         apigw_management_client.post_to_connection(
             ConnectionId=connection_id, Data=message.encode("utf-8")
         )
-        logger.info("Message sent successfully.")
+        logger.info("Message sent  to client successfully.")
     except ClientError as e:
         logger.error(f"Failed to send message to WebSocket: {e}")
     except Exception as e:
